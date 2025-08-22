@@ -12,7 +12,7 @@ public class Stock {
     private Long id;
 
     private String name;
-
+    @Column(nullable = false, precision = 19, scale = 4)
     public BigDecimal getPrice() {
         return price;
     }

@@ -16,12 +16,12 @@ public class PortfolioController {
     public PortfolioController(PortfolioService portfolioService) {
         this.portfolioService = portfolioService;
     }
-//     Deprecated
-//    @GetMapping("api/symbols")
-//    public void getSymbols(){
-//        this.portfolioService.loadStockSymbols();
-//    }
-//
+     //Deprecated
+    @GetMapping("api/symbols")
+    public void getSymbols(){
+        this.portfolioService.loadStockSymbols();
+    }
+
     @GetMapping("api/load")
     public void getPrice() throws IOException, InterruptedException {
         this.portfolioService.loadPricePerSymbol();

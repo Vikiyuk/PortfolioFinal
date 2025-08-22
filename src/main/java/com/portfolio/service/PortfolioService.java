@@ -3,15 +3,12 @@ package com.portfolio.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.portfolio.entities.Holding;
+import com.portfolio.entities.HoldingHistory;
 import com.portfolio.entities.Stock;
-import com.portfolio.repositories.HoldingRepository;
-import com.portfolio.repositories.PortfolioRepository;
-import com.portfolio.repositories.StockRepository;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
+import com.portfolio.entities.StockHistory;
+import com.portfolio.repositories.*;
 import org.springframework.stereotype.Service;
 import io.github.cdimascio.dotenv.Dotenv;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -20,8 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -30,16 +26,19 @@ public class PortfolioService {
     private final StockRepository stockRepository;
     private final HttpClient httpClient;
     private final HoldingRepository holdingRepository;
-
+    private final HoldingHistoryRepository holdingHistoryRepository;
+    private final StockHistoryRepository stockHistoryRepository;
 
     Dotenv dotenv = Dotenv.load();
 
     private final String apiKey = dotenv.get("API_KEY");
 
-    public PortfolioService(PortfolioRepository portfolioRepository, StockRepository stockRepository, HoldingRepository holdingRepository) {
+    public PortfolioService(PortfolioRepository portfolioRepository, StockRepository stockRepository, HoldingRepository holdingRepository, HoldingHistoryRepository holdingHistoryRepository, StockHistoryRepository stockHistoryRepository) {
         this.portfolioRepository = portfolioRepository;
         this.stockRepository = stockRepository;
         this.holdingRepository = holdingRepository;
+        this.holdingHistoryRepository = holdingHistoryRepository;
+        this.stockHistoryRepository = stockHistoryRepository;
         this.httpClient = HttpClient.newHttpClient();
     }
 
@@ -105,9 +104,13 @@ public class PortfolioService {
             JsonNode root = objectMapper.readTree(response.body());
             //c is price in API documentation
             String price = root.get("c").asText();
+            BigDecimal newPrice = new BigDecimal(price);
+            if (newPrice.compareTo(stock.getPrice()) != 0) {
+                stock.setPrice(newPrice);
+                stockRepository.save(stock);
+                saveStockToHistory(stock);
+            }
 
-            stock.setPrice(new BigDecimal(price));
-            stockRepository.save(stock);
         }
     }
 
@@ -126,8 +129,11 @@ public class PortfolioService {
         holding.setStock(stock);
         holding.setQuantity(new BigDecimal(quantity));
         holding.setPrice(stock.getPrice());
-        holding.setTimestamp(LocalDate.now());
+        holding.setTimestamp(LocalDateTime.now());
+
         holdingRepository.save(holding);
+        saveHoldingToHistory(holding);
+
     }
 
     public void removeHolding(String id) {
@@ -136,10 +142,34 @@ public class PortfolioService {
 
     public void updateHolding(String id, String quantity) {
         Holding holding = this.holdingRepository.findById(Long.parseLong(id)).orElse(null);
-        holding.setQuantity(new BigDecimal(quantity));
+        if (holding != null) {
+            holding.setQuantity(new BigDecimal(quantity));
+            holding.setTimestamp(LocalDateTime.now());
+            holdingRepository.save(holding);
+            this.saveHoldingToHistory(holding);
+        }
 
-        holding.setTimestamp(LocalDate.now());
-        holdingRepository.save(holding);
+
     }
+    public void saveHoldingToHistory(Holding holding) {
+        HoldingHistory holdingHistory = new HoldingHistory();
+        holdingHistory.setStock(holding.getStock());
+        holdingHistory.setQuantity(holding.getQuantity());
+        holdingHistory.setPrice(holding.getPrice());
+        holdingHistory.setTimestamp(holding.getTimestamp());
+        holdingHistory.setTimestampHistory(LocalDateTime.now());
+        holdingHistoryRepository.save(holdingHistory);
+    }
+
+
+    public void saveStockToHistory(Stock stock) {
+        StockHistory stockHistory = new StockHistory();
+        stockHistory.setName(stock.getName());
+        stockHistory.setTicker(stock.getTicker());
+        stockHistory.setPrice(stock.getPrice());
+        stockHistory.setTimestampHistory(LocalDateTime.now());
+        stockHistoryRepository.save(stockHistory);
+    }
+
 
 }

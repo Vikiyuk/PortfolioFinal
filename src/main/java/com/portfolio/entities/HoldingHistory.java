@@ -1,13 +1,13 @@
 package com.portfolio.entities;
+
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
-public class Holding {
+public class HoldingHistory {
     @Id
     @GeneratedValue
     private Long id;
@@ -54,9 +54,22 @@ public class Holding {
 
     private LocalDateTime timestamp;
 
+
+
+
+    private LocalDateTime timestampHistory;
+
     @Column(nullable = false, precision = 19, scale = 4)
     private java.math.BigDecimal quantity;
 
     @Column(nullable = false, precision = 19, scale = 4)
     private java.math.BigDecimal price;
+
+    public LocalDateTime getTimestampHistory() {
+        return timestampHistory;
+    }
+
+    public void setTimestampHistory(LocalDateTime timestampHistory) {
+        this.timestampHistory = timestampHistory;
+    }
 }
