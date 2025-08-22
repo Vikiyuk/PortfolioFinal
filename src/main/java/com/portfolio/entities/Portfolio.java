@@ -1,4 +1,4 @@
-package com.portfolio.repositories.entities;
+package com.portfolio.entities;
 
 import jakarta.persistence.*;
 
