@@ -2,10 +2,7 @@ package com.portfolio.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.portfolio.entities.Holding;
-import com.portfolio.entities.HoldingHistory;
-import com.portfolio.entities.Stock;
-import com.portfolio.entities.StockHistory;
+import com.portfolio.entities.*;
 import com.portfolio.repositories.*;
 import org.springframework.stereotype.Service;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -28,18 +25,24 @@ public class PortfolioService {
     private final HoldingRepository holdingRepository;
     private final HoldingHistoryRepository holdingHistoryRepository;
     private final StockHistoryRepository stockHistoryRepository;
-
+    private final BalanceRepository balanceRepository;
+    private Balance balanceEntity;
     Dotenv dotenv = Dotenv.load();
 
     private final String apiKey = dotenv.get("API_KEY");
 
-    public PortfolioService(PortfolioRepository portfolioRepository, StockRepository stockRepository, HoldingRepository holdingRepository, HoldingHistoryRepository holdingHistoryRepository, StockHistoryRepository stockHistoryRepository) {
+    public PortfolioService(PortfolioRepository portfolioRepository, StockRepository stockRepository, HoldingRepository holdingRepository, HoldingHistoryRepository holdingHistoryRepository, StockHistoryRepository stockHistoryRepository, BalanceRepository balanceRepository) {
         this.portfolioRepository = portfolioRepository;
         this.stockRepository = stockRepository;
         this.holdingRepository = holdingRepository;
         this.holdingHistoryRepository = holdingHistoryRepository;
         this.stockHistoryRepository = stockHistoryRepository;
+        this.balanceRepository = balanceRepository;
         this.httpClient = HttpClient.newHttpClient();
+        this.balanceEntity = balanceRepository.findById(1L).orElseGet(() -> {
+            Balance newBalance = new Balance(new BigDecimal("1000000"));
+            return balanceRepository.save(newBalance);
+        });
     }
 
     public List<Stock> getAllStock(){
@@ -52,44 +55,55 @@ public class PortfolioService {
 
     public void loadStockSymbols() {
         try {
-            String url = "https://finnhub.io/api/v1/stock/symbol?exchange=US&token="+this.apiKey;
+            String url = "https://finnhub.io/api/v1/stock/symbol?exchange=US&token=" + this.apiKey;
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
                     .uri(URI.create(url))
                     .header("Accept", "application/json")
                     .build();
-            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode root = objectMapper.readTree(response.body());
-            for (int i = 0; i < Math.min(30, root.size()); i++) {
-                JsonNode node = root.get(i);
+
+            int count = 0;
+            for (JsonNode node : root) {
+                if (count >= 1000) break;
+
                 String ticker = node.get("symbol").asText();
-                String urlPrice = "https://finnhub.io/api/v1/quote?symbol=" + ticker + "&token="+this.apiKey;
+                String name = node.get("description").asText();
+                if (stockRepository.findByTicker(ticker).isPresent()) continue;
+
+                String urlPrice = "https://finnhub.io/api/v1/quote?symbol=" + ticker + "&token=" + this.apiKey;
                 HttpRequest requestPrice = HttpRequest.newBuilder()
                         .GET()
                         .uri(URI.create(urlPrice))
                         .header("Accept", "application/json")
                         .build();
-                HttpResponse<String> responsePrice = HttpClient.newHttpClient().send(requestPrice, HttpResponse.BodyHandlers.ofString());
-                JsonNode rootPrice = objectMapper.readTree(responsePrice.body());
-                //c is price in API documentation
-                String price = rootPrice.get("c").asText();
 
-                if (Double.parseDouble(price)>1){
-                    String name = node.get("description").asText();
-                    if (stockRepository.findByTicker(ticker).isEmpty()) {
+                HttpResponse<String> responsePrice = httpClient.send(requestPrice, HttpResponse.BodyHandlers.ofString());
+                JsonNode rootPrice = objectMapper.readTree(responsePrice.body());
+
+                if (rootPrice.has("c") && !rootPrice.get("c").isNull()) {
+                    BigDecimal price = new BigDecimal(rootPrice.get("c").asText());
+
+                    if (price.compareTo(BigDecimal.ONE) > 0) {
                         Stock stock = new Stock();
                         stock.setTicker(ticker);
                         stock.setName(name);
+                        stock.setPrice(price);
                         stockRepository.save(stock);
+                        count++;
                     }
                 }
-
             }
+
+            System.out.println("Loaded " + count + " stocks.");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     public void loadPricePerSymbol() throws IOException, InterruptedException {
         for (Stock stock : stockRepository.findAll()) {
@@ -133,7 +147,13 @@ public class PortfolioService {
 
         holdingRepository.save(holding);
         saveHoldingToHistory(holding);
-
+        BigDecimal cost = holding.getPrice().multiply(holding.getQuantity());
+        if (balanceEntity.getAmount().compareTo(cost) < 0) {
+            throw new ArithmeticException("Insufficient balance");
+        }
+        balanceEntity.setAmount(balanceEntity.getAmount().subtract(cost));
+        balanceRepository.save(balanceEntity);
+        System.out.println(balanceEntity.getAmount());
     }
 
     public void removeHolding(String id) {
@@ -142,9 +162,20 @@ public class PortfolioService {
 
     public void updateHolding(String id, String quantity) {
         Holding holding = this.holdingRepository.findById(Long.parseLong(id)).orElse(null);
+        BigDecimal quantityConverted = new BigDecimal(quantity);
         if (holding != null) {
-            holding.setQuantity(new BigDecimal(quantity));
+            BigDecimal adjustment = holding.getQuantity().subtract(quantityConverted).multiply(holding.getPrice());
+            BigDecimal newBalance = balanceEntity.getAmount().add(adjustment);
+            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                throw new ArithmeticException("Insufficient balance");
+            }
+            balanceEntity.setAmount(newBalance);
+            balanceRepository.save(balanceEntity);
+
+            System.out.println(balanceEntity.getAmount());
+            holding.setQuantity(quantityConverted);
             holding.setTimestamp(LocalDateTime.now());
+
             holdingRepository.save(holding);
             this.saveHoldingToHistory(holding);
         }

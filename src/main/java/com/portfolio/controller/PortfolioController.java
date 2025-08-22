@@ -28,19 +28,27 @@ public class PortfolioController {
     }
 
     @GetMapping("api/stock")
-    public List<Stock> getStock() throws IOException, InterruptedException {
+    public List<Stock> getStock() {
         return this.portfolioService.getAllStock();
     }
 
     @GetMapping("api/holdings")
-    public List<Holding> getHoldings() throws IOException, InterruptedException {
+    public List<Holding> getHoldings() {
         return this.portfolioService.getAllHoldings();
     }
 
     @PostMapping("api/holdings")
-    public void addHolding(@RequestParam String ticker,@RequestParam String quantity) throws IOException, InterruptedException {
+    public void addHolding(@RequestParam String ticker,@RequestParam String quantity) {
         portfolioService.addHolding(ticker, quantity);
     }
 
+    @PutMapping("api/holdings")
+    public void updateHolding(@RequestParam String id,@RequestParam String quantity) {
+        portfolioService.updateHolding(id, quantity);
+    }
+    @DeleteMapping("api/holdings")
+    public void deleteHolding(@RequestParam String id){
+        portfolioService.removeHolding(id);
+    }
 
 }
