@@ -11,7 +11,7 @@ public class Portfolio {
     @GeneratedValue
     private Long id;
 
-    @OneToMany(mappedBy = "portfolio")
-    private List<Holding> holdings = new ArrayList<>();
+//    @OneToMany(mappedBy = "portfolio")
+//    private List<Holding> holdings = new ArrayList<>();
 
 }
