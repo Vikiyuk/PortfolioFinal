@@ -4,6 +4,8 @@ import com.portfolio.service.PortfolioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.IOException;
+
 @Controller
 public class PortfolioController {
     private PortfolioService portfolioService;
@@ -13,7 +15,13 @@ public class PortfolioController {
     }
 //     Deprecated
 //    @GetMapping("api/symbols")
-//    public String getSymbols(){
-//        return this.portfolioService.loadStockSymbols();
+//    public void getSymbols(){
+//        this.portfolioService.loadStockSymbols();
 //    }
+//
+    @GetMapping("api/load")
+    public void getPrice() throws IOException, InterruptedException {
+        this.portfolioService.loadPricePerSymbol();
+    }
+
 }

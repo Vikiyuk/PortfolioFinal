@@ -2,6 +2,8 @@ package com.portfolio.entities;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "stocks")
 public class Stock {
@@ -10,6 +12,16 @@ public class Stock {
     private Long id;
 
     private String name;
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    private BigDecimal price;
 
     public String getName() {
         return name;
