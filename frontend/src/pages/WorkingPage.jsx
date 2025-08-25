@@ -4,6 +4,7 @@ import Balance from '../components/Balance';
 import BuySell from '../components/BuySell';
 import PriceGraph from '../components/PriceGraph';
 import GainLossTable from '../components/GainLossTable';
+import StockTable from "../components/StockTable.jsx";
 
 const WorkingPage = () => {
   return (
@@ -16,15 +17,15 @@ const WorkingPage = () => {
         {/* Left column (Balance + Buy/Sell stacked) */}
         <div className="col-span-1 space-y-6">
           <Balance />
-          <BuySell />
+          <StockTable />
         </div>
 
         {/* Right column (Graph + GainLossTable) */}
         <div className="col-span-2 space-y-6">
-          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+          <div className="bg-black p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
             <PriceGraph />
           </div>
-          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+          <div className="bg-black p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
             <GainLossTable />
           </div>
         </div>

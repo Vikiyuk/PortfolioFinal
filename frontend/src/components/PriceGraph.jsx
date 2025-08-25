@@ -21,7 +21,7 @@ const PriceGraph = () => {
   };
 
   return (
-    <div className="p-4 bg-white shadow rounded my-4">
+    <div className="p-4 bg-purple-950 shadow rounded my-4">
       <h2 className="text-lg font-semibold mb-2">Price Graph</h2>
       <Line data={data} />
     </div>

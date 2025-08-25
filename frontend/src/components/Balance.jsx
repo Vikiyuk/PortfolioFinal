@@ -5,7 +5,7 @@ import { StockContext } from '../context/StockContext';
 const Balance = () => {
     const { balance } = useContext(StockContext);
   return (
-    <div className="p-4 bg-white shadow rounded my-4">
+    <div className="p-4 bg-purple-950 shadow rounded my-4">
       <h2 className="text-lg font-semibold">Balance</h2>
       <p className="text-2xl">${balance}</p>
     </div>

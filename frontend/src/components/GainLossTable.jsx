@@ -15,7 +15,7 @@ const GainLossTable = () => {
   };
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow-md">
+    <div className="p-4 bg-purple-950 rounded-xl shadow-md">
       <h2 className="text-xl font-bold mb-4">📊 Portfolio Performance</h2>
       <table className="w-full border-collapse">
         <thead>
