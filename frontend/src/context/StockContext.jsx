@@ -5,27 +5,38 @@ export const StockContext = createContext();
 
 export const StockProvider = ({ children }) => {
   const [balance, setBalance] = useState(10000); // fallback starting balance
-  const [portfolio, setPortfolio] = useState([]); 
+  const [portfolio, setPortfolio] = useState([]);
   const [history, setHistory] = useState([]);
+  const [trends, setTrends] = useState([]);
 
-  const [useBackend, setUseBackend] = useState(false); // toggle to switch between mock and real API
+  const [useBackend, setUseBackend] = useState(true); // set true when backend ready
 
-  // ===== Fetch from backend if ready =====
   useEffect(() => {
     if (useBackend) {
       fetchPortfolio();
       fetchBalance();
       fetchHistory();
+      fetchTrends();
     }
   }, [useBackend]);
 
   const fetchPortfolio = async () => {
     try {
-      const res = await fetch('http://backend-url.com/api/portfolio');
+      const res = await fetch('http://background./api/portfolio'); // ✅ your endpoint
       const data = await res.json();
       setPortfolio(data);
     } catch (error) {
       console.error("Failed to fetch portfolio", error);
+    }
+  };
+
+  const fetchTrends = async () => {
+    try {
+      const res = await fetch('http://localhost:8080/api/trends'); // ✅ your endpoint
+      const data = await res.json();
+      setTrends(data);
+    } catch (error) {
+      console.error("Failed to fetch trend", error);
     }
   };
 
@@ -49,7 +60,7 @@ export const StockProvider = ({ children }) => {
     }
   };
 
-  // ===== Buy / Sell Functions =====
+  // ===== Buy / Sell Functions (mock vs backend) =====
   const buyStock = async (symbol, amount, price) => {
     if (useBackend) {
       try {
@@ -67,14 +78,14 @@ export const StockProvider = ({ children }) => {
       const cost = amount * price;
       if (balance >= cost) {
         setBalance(balance - cost);
-        const existing = portfolio.find((s) => s.symbol === symbol);
+        const existing = portfolio.find((s) => s.ticker === symbol);
         if (existing) {
           existing.amount += amount;
           existing.totalSpent += cost;
           existing.avgPrice = (existing.totalSpent / existing.amount).toFixed(2);
           setPortfolio([...portfolio]);
         } else {
-          setPortfolio([...portfolio, { symbol, amount, avgPrice: price, totalSpent: cost }]);
+          setPortfolio([...portfolio, { ticker: symbol, amount, avgPrice: price, totalSpent: cost }]);
         }
         setHistory([...history, { type: "BUY", symbol, amount, price, date: new Date() }]);
       } else {
@@ -97,12 +108,12 @@ export const StockProvider = ({ children }) => {
         console.error("Sell failed", error);
       }
     } else {
-      const existing = portfolio.find((s) => s.symbol === symbol);
+      const existing = portfolio.find((s) => s.ticker === symbol);
       if (existing && existing.amount >= amount) {
         existing.amount -= amount;
         setBalance(balance + amount * price);
         if (existing.amount === 0) {
-          setPortfolio(portfolio.filter((s) => s.symbol !== symbol));
+          setPortfolio(portfolio.filter((s) => s.ticker !== symbol));
         } else {
           setPortfolio([...portfolio]);
         }
@@ -114,16 +125,17 @@ export const StockProvider = ({ children }) => {
   };
 
   return (
-    <StockContext.Provider value={{ 
-      balance, 
-      portfolio, 
-      history, 
-      buyStock, 
-      sellStock, 
-      useBackend, 
-      setUseBackend 
-    }}>
-      {children}
-    </StockContext.Provider>
+      <StockContext.Provider value={{
+        balance,
+        portfolio,
+        trends,
+        history,
+        buyStock,
+        sellStock,
+        useBackend,
+        setUseBackend
+      }}>
+        {children}
+      </StockContext.Provider>
   );
 };
