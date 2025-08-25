@@ -15,40 +15,69 @@ const faqData = [
   { question: "Why choose Sarvat over others?", answer: "Combines portfolio management with interactive trend analytics and modern UI." }
 ];
 
-const trendData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-  datasets: [
-    {
-      label: 'Market Trend',
-      data: [120, 130, 125, 140, 135],
-      borderColor: '#9d4edd',
-      backgroundColor: 'rgba(157,78,221,0.2)',
-      tension: 0.4,
-    },
-  ],
-};
-
 const WelcomePage = () => {
   const [openFAQ, setOpenFAQ] = useState(null);
   const navigate = useNavigate();
   const toggleFAQ = (index) => setOpenFAQ(openFAQ === index ? null : index);
 
+  const trendChartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    datasets: [
+      {
+        label: 'Market Trend',
+        data: [120, 130, 125, 140, 135],
+        borderColor: 'purple',
+        backgroundColor: 'rgba(157,78,221,0.2)',
+        tension: 0.4,
+        pointBackgroundColor: 'purple',
+      },
+    ],
+  };
+
+  const trendChartOptions = {
+    plugins: {
+      legend: {
+        labels: {
+          color: 'white',
+        },
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'grey',
+        },
+        ticks: {
+          color: 'white',
+        },
+      },
+      y: {
+        grid: {
+          color: 'grey',
+        },
+        ticks: {
+          color: 'white',
+        },
+      },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      
 
       {/* Hero Section */}
       <Hero navigate={navigate} />
 
       {/* Trends + GainLoss Section */}
-      <div className="md:flex md:space-x-6 px-8 py-8 border-b border-white-700">
+      <div className="md:flex md:space-x-6 px-8 py-8 border-b border-gray-700">
         {/* Trend Chart */}
-        <div className="md:w-1/2 p-4 rounded-xl bg-gradient-to-br from-black via-purple-900 to-black shadow-lg hover:shadow-[0_0_30px_rgba(157,78,221,0.7)] transition-shadow duration-500 mb-6 md:mb-0 border border-purple-700">
-          <Line data={trendData} />
+        <div className="md:w-1/2 p-4 rounded-xl bg-black shadow-lg border border-purple-700 mb-6 md:mb-0">
+          <h2 className="text-lg font-semibold mb-2 text-purple-400">Market Trend</h2>
+          <Line data={trendChartData} options={trendChartOptions} />
         </div>
 
         {/* Gain/Loss Table */}
-        <div className="md:w-1/2 p-4 rounded-xl bg-gradient-to-br from-black via-purple-900 to-black shadow-lg hover:shadow-[0_0_30px_rgba(157,78,221,0.7)] transition-shadow duration-500 border border-purple-700">
+        <div className="md:w-1/2 p-4 rounded-xl bg-gradient-to-br from-black via-purple-900 to-black shadow-lg border border-purple-700">
           <GainLossTable />
         </div>
       </div>
