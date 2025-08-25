@@ -1,25 +1,26 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import WorkingPage from './pages/WorkingPage';
+// src/App.jsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import WelcomePage from './pages/WelcomePage';
+import WorkingPage from './pages/WorkingPage';
 import PortfolioPage from './pages/PortfolioPage';
-import { StockProvider } from './context/StockContext'  // context provider
+import ContactPage from './pages/ContactPage'; // NEW
+import { StockProvider } from './context/StockContext';
+import Navbar from './components/Navbar';
 
 
 function App() {
   return (
-    <Router>
-      <nav className="p-4 bg-gray-100 flex gap-4">
-        <Link to="/">Welcome</Link>
-        <Link to="/working">Working</Link>
-        <Link to="/portfolio">Portfolio</Link>
-      </nav>
-      
-      <Routes>
-        <Route path="/" element={<WelcomePage />} />
-        <Route path="/working" element={<WorkingPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-      </Routes>
-    </Router>
+    <StockProvider>
+      <Router>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<WelcomePage />} />
+          <Route path="/working" element={<WorkingPage />} />
+          <Route path="/portfolio" element={<PortfolioPage />} />
+          <Route path="/contact" element={<ContactPage />} /> {/* NEW */}
+        </Routes>
+      </Router>
+    </StockProvider>
   );
 }
 

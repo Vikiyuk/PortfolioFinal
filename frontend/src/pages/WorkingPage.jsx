@@ -3,11 +3,11 @@ import Header from '../components/Header';
 import Balance from '../components/Balance';
 import BuySell from '../components/BuySell';
 import PriceGraph from '../components/PriceGraph';
-import GainLossTable from '../components/GainLossTable'; // optional, if you want quick summary
+import GainLossTable from '../components/GainLossTable';
 
 const WorkingPage = () => {
   return (
-    <div className="working-page min-h-screen bg-gray-50 p-6">
+    <div className="working-page min-h-screen bg-black text-white p-6">
       {/* Header */}
       <Header />
 
@@ -19,10 +19,14 @@ const WorkingPage = () => {
           <BuySell />
         </div>
 
-        {/* Right column (Graph + optional table) */}
+        {/* Right column (Graph + GainLossTable) */}
         <div className="col-span-2 space-y-6">
-          <PriceGraph />
-          <GainLossTable /> {/* Optional enhancement */}
+          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+            <PriceGraph />
+          </div>
+          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+            <GainLossTable />
+          </div>
         </div>
       </div>
     </div>

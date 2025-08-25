@@ -1,0 +1,45 @@
+.prism-container {
+  perspective: 1200px;
+  width: 280px;
+  height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.tri-prism {
+  width: 0;
+  height: 0;
+  border-left: 70px solid transparent;
+  border-right: 70px solid transparent;
+  border-bottom: 140px solid #6a0dad; /* Deep purple prism */
+  position: relative;
+  transform-style: preserve-3d;
+  box-shadow: 0 0 20px rgba(128, 0, 128, 0.5);
+}
+
+/* Light beams with gradient and glow */
+.light-beam {
+  position: absolute;
+  top: 140px;
+  left: 50%;
+  width: 6px;
+  height: 100px;
+  transform: translateX(-50%);
+  opacity: 0.7;
+  border-radius: 3px;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.light-beam.red { background: linear-gradient(to top, #ff4d4d, transparent); left: 20%; animation: beam 2s infinite alternate; }
+.light-beam.orange { background: linear-gradient(to top, #ff9900, transparent); left: 32%; animation: beam 2.2s infinite alternate; }
+.light-beam.yellow { background: linear-gradient(to top, #ffff66, transparent); left: 44%; animation: beam 2.4s infinite alternate; }
+.light-beam.green { background: linear-gradient(to top, #66ff66, transparent); left: 56%; animation: beam 2.6s infinite alternate; }
+.light-beam.blue { background: linear-gradient(to top, #6699ff, transparent); left: 68%; animation: beam 2.8s infinite alternate; }
+.light-beam.purple { background: linear-gradient(to top, #cc66ff, transparent); left: 80%; animation: beam 3s infinite alternate; }
+
+@keyframes beam {
+  0% { height: 20px; opacity: 0.5; }
+  100% { height: 120px; opacity: 1; }
+}
