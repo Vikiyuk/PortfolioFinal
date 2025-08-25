@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface StockHistoryRepository extends JpaRepository<StockHistory,Long> {
     List<StockHistory> findByTimestampHistoryBetween(LocalDateTime fourteenDaysAgo, LocalDateTime now);
+    List<StockHistory> findByTickerAndTimestampHistoryBetween(String ticker, LocalDateTime start, LocalDateTime end);
+
 }

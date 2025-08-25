@@ -3,6 +3,7 @@ package com.portfolio.controller;
 import com.portfolio.dto.StockTrend;
 import com.portfolio.entities.Holding;
 import com.portfolio.entities.Stock;
+import com.portfolio.entities.StockHistory;
 import com.portfolio.service.PortfolioService;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,6 +65,11 @@ public class PortfolioController {
     @GetMapping("api/trends")
     public List<StockTrend> getTrends(){
         return portfolioService.getTrends();
+    }
+
+    @GetMapping("api/stockhistory")
+    public List<StockHistory> getStockhistory(@RequestParam String id){
+        return portfolioService.getStock14DaysHistory(id);
     }
 
 }
