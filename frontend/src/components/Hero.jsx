@@ -2,7 +2,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import PrismAnimation from './PrismAnimation';
-
+import PrismLightAnimation from './LightPrism';
+import PrismScene from './LightPrism';
+import { head } from 'framer-motion/client';
 const Hero = ({ navigate }) => (
   <div className="flex flex-col md:flex-row items-center justify-between px-8 py-12 border-b border-gray-700">
     {/* Left side: Title + Subtitle + Button */}
@@ -32,7 +34,10 @@ const Hero = ({ navigate }) => (
     {/* Right side: Prism animation */}
     <div className="md:w-1/2 flex justify-center items-center mt-12 md:mt-0">
       <div className="w-full h-96">
-        <PrismAnimation />
+      <div style={{width:"100%",height:"100%",display:"flex",justifyContent:"flex-end",alignItems:"flex-start"}}>
+
+      <PrismScene/>
+    </div>
       </div>
     </div>
   </div>
