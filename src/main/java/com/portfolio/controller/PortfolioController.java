@@ -1,9 +1,10 @@
 package com.portfolio.controller;
 
+import com.portfolio.dto.StockTrend;
 import com.portfolio.entities.Holding;
 import com.portfolio.entities.Stock;
+import com.portfolio.entities.StockHistory;
 import com.portfolio.service.PortfolioService;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -49,6 +50,26 @@ public class PortfolioController {
     @DeleteMapping("api/holdings")
     public void deleteHolding(@RequestParam String id){
         portfolioService.removeHolding(id);
+    }
+
+    @GetMapping("api/gain")
+    public String getCalculatedGainLost(@RequestParam String id,@RequestParam String quantity){
+        return portfolioService.calculateGainLoss(id,quantity);
+    }
+
+    @GetMapping("api/generate")
+    public void generateFakeData(){
+        portfolioService.generateFakeStockHistory();
+    }
+
+    @GetMapping("api/trends")
+    public List<StockTrend> getTrends(){
+        return portfolioService.getTrends();
+    }
+
+    @GetMapping("api/stockhistory")
+    public List<StockHistory> getStockhistory(@RequestParam String ticker){
+        return portfolioService.getStock14DaysHistory(ticker);
     }
 
 }

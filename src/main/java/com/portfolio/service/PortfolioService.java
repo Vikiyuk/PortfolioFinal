@@ -2,6 +2,7 @@ package com.portfolio.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.portfolio.dto.StockTrend;
 import com.portfolio.entities.*;
 import com.portfolio.repositories.*;
 import org.springframework.stereotype.Service;
@@ -9,13 +10,15 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PortfolioService {
@@ -107,26 +110,45 @@ public class PortfolioService {
 
     public void loadPricePerSymbol() throws IOException, InterruptedException {
         for (Stock stock : stockRepository.findAll()) {
-            String url = "https://finnhub.io/api/v1/quote?symbol=" + stock.getTicker() + "&token="+this.apiKey;
-            HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(URI.create(url))
-                    .header("Accept", "application/json")
-                    .build();
-            HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode root = objectMapper.readTree(response.body());
-            //c is price in API documentation
-            String price = root.get("c").asText();
-            BigDecimal newPrice = new BigDecimal(price);
-            if (newPrice.compareTo(stock.getPrice()) != 0) {
-                stock.setPrice(newPrice);
-                stockRepository.save(stock);
-                saveStockToHistory(stock);
-            }
+            boolean fetched = false;
+            int attempts = 0;
+            while (!fetched) {
+                try {
+                    String url = "https://finnhub.io/api/v1/quote?symbol=" + stock.getTicker() + "&token=" + this.apiKey;
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .GET()
+                            .uri(URI.create(url))
+                            .header("Accept", "application/json")
+                            .build();
+                    HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    JsonNode root = objectMapper.readTree(response.body());
+                    JsonNode priceNode = root.get("c");
 
+                    if (priceNode != null && !priceNode.isNull()) {
+                        BigDecimal newPrice = new BigDecimal(priceNode.asText());
+                        if (stock.getPrice() != null && newPrice.compareTo(stock.getPrice()) != 0) {
+                            stock.setPrice(newPrice);
+                            stockRepository.save(stock);
+                            saveStockToHistory(stock);
+                            System.out.println("Ticker: " + stock.getTicker() + " Price: " + stock.getPrice());
+                        }
+                        fetched = true;
+                    } else {
+                        System.err.println("Missing price for " + stock.getTicker() + ". Response: " + response.body());
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error fetching price for " + stock.getTicker() + ": " + e.getMessage());
+                }
+
+                if (!fetched) {
+                    attempts++;
+                    Thread.sleep(150);
+                }
+            }
         }
     }
+
 
 
     public List<Holding> getAllHoldings(){
@@ -202,5 +224,92 @@ public class PortfolioService {
         stockHistoryRepository.save(stockHistory);
     }
 
+    public String calculateGainLoss(String id, String newQuantityString){
+        Holding holding = holdingRepository.findById(Long.parseLong(id)).get();
+        BigDecimal newQuantity= new BigDecimal(newQuantityString);
+        return holding.getQuantity().multiply(holding.getPrice()).subtract(newQuantity.multiply(holding.getPrice())).toString();
+    }
+
+    private BigDecimal simulatePrice(BigDecimal currentPrice) {
+        double changePercent = (Math.random() - 0.5) * 0.1;
+        BigDecimal change = currentPrice.multiply(BigDecimal.valueOf(changePercent));
+        return currentPrice.add(change).max(BigDecimal.ONE);
+    }
+
+    public void generateFakeStockHistory() {
+        List<Stock> stocks = stockRepository.findAll();
+        LocalDate startDate = LocalDate.now().minusDays(14);
+        LocalDate endDate = LocalDate.now();
+
+        for (Stock stock : stocks) {
+            BigDecimal price = stock.getPrice();
+
+            for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+                price = simulatePrice(price);
+
+                StockHistory history = new StockHistory();
+                history.setTicker(stock.getTicker());
+                history.setName(stock.getName());
+                history.setPrice(price);
+                history.setTimestampHistory(date.atStartOfDay());
+
+                stockHistoryRepository.save(history);
+            }
+        }
+
+        System.out.println("Fake stock history generated.");
+    }
+
+
+
+    public List<StockTrend> getTrends() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime fourteenDaysAgo = now.minusDays(14);
+
+        List<StockHistory> recentHistory = stockHistoryRepository.findByTimestampHistoryBetween(fourteenDaysAgo, now);
+
+        Map<String, List<StockHistory>> grouped = recentHistory.stream()
+                .collect(Collectors.groupingBy(StockHistory::getTicker));
+
+        List<StockTrend> trends = new ArrayList<>();
+
+        for (Map.Entry<String, List<StockHistory>> entry : grouped.entrySet()) {
+            String ticker = entry.getKey();
+            List<StockHistory> history = entry.getValue();
+            history.sort(Comparator.comparing(StockHistory::getTimestampHistory));
+
+            BigDecimal startPrice = history.get(0).getPrice();
+            BigDecimal endPrice = history.get(history.size() - 1).getPrice();
+
+            Optional<Stock> stockOpt = stockRepository.findByTicker(ticker);
+            if (stockOpt.isPresent()) {
+                Stock stock = stockOpt.get();
+                StockTrend trend = new StockTrend(ticker, stock.getName(), startPrice, endPrice);
+                trends.add(trend);
+            }
+        }
+        List<StockTrend> sorted = trends.stream()
+                .sorted(Comparator.comparing(StockTrend::getPercentChange).reversed())
+                .collect(Collectors.toList());
+
+        List<StockTrend> result = new ArrayList<>();
+
+        result.addAll(sorted.stream().limit(5).collect(Collectors.toList()));
+
+        result.addAll(sorted.stream()
+                .sorted(Comparator.comparing(StockTrend::getPercentChange))
+                .limit(5)
+                .collect(Collectors.toList()));
+
+        return result;
+    }
+    public List<StockHistory> getStock14DaysHistory(String ticker) {
+        Stock searchedStock = stockRepository.findByTicker(ticker).get();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime fourteenDaysAgo = now.minusDays(14);
+
+        List<StockHistory> recentHistory = stockHistoryRepository.findByTickerAndTimestampHistoryBetween(searchedStock.getTicker(), fourteenDaysAgo, now);
+        return recentHistory;
+    }
 
 }
