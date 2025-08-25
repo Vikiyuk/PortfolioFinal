@@ -51,4 +51,9 @@ public class PortfolioController {
         portfolioService.removeHolding(id);
     }
 
+    @GetMapping("api/gain")
+    public void getCalculatedGainLostt(@RequestParam String id,@RequestParam String quantity){
+        portfolioService.calculateGainLoss(id,quantity);
+    }
+
 }
