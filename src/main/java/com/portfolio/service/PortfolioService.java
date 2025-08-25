@@ -202,5 +202,10 @@ public class PortfolioService {
         stockHistoryRepository.save(stockHistory);
     }
 
+    public BigDecimal calculateGainLoss(String id, String newQuantityString){
+        Holding holding = holdingRepository.findById(Long.parseLong(id)).get();
+        BigDecimal newQuantity= new BigDecimal(newQuantityString);
+        return holding.getQuantity().multiply(holding.getStock().getPrice()).subtract(newQuantity.multiply(holding.getStock().getPrice()));
+    }
 
 }
