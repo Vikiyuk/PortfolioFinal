@@ -303,8 +303,8 @@ public class PortfolioService {
 
         return result;
     }
-    public List<StockHistory> getStock14DaysHistory(String id) {
-        Stock searchedStock = stockRepository.findById(Long.parseLong(id)).get();
+    public List<StockHistory> getStock14DaysHistory(String ticker) {
+        Stock searchedStock = stockRepository.findByTicker(ticker).get();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime fourteenDaysAgo = now.minusDays(14);
 

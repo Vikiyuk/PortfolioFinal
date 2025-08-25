@@ -68,8 +68,8 @@ public class PortfolioController {
     }
 
     @GetMapping("api/stockhistory")
-    public List<StockHistory> getStockhistory(@RequestParam String id){
-        return portfolioService.getStock14DaysHistory(id);
+    public List<StockHistory> getStockhistory(@RequestParam String ticker){
+        return portfolioService.getStock14DaysHistory(ticker);
     }
 
 }
