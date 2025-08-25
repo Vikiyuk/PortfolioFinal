@@ -14,21 +14,15 @@ const Navbar = () => {
 
   return (
     <nav className="bg-black p-4 flex items-center justify-between shadow-md">
-      {/* Logo / SARVAT title */}
+      {/* Small logo / SARVAT */}
       <div className="text-2xl font-bold text-purple-400">SARVAT</div>
 
-      {/* Links */}
+      {/* Navbar Links */}
       <div className="flex space-x-4">
-        <Link to="/" className="hover:text-purple-400 transition-colors duration-300 font-semibold">Home</Link>
-        <Link to="/working" className={linkClasses('/working')}>
-          WorkPage
-        </Link>
-        <Link to="/portfolio" className={linkClasses('/portfolio')}>
-          Portfolio
-        </Link>
-        <Link to="/contact" className={linkClasses('/contact')}>
-          Contact
-        </Link>
+        <Link to="/" className={linkClasses('/')}>Home</Link>
+        <Link to="/working" className={linkClasses('/working')}>WorkPage</Link>
+        <Link to="/portfolio" className={linkClasses('/portfolio')}>Portfolio</Link>
+        <Link to="/contact" className={linkClasses('/contact')}>Contact</Link>
       </div>
     </nav>
   );

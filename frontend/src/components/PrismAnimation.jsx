@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import './PrismAnimation.css';
-
+import "tailwindcss";
 const PrismAnimation = () => {
   return (
     <div className="prism-container">

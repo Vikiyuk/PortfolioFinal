@@ -7,24 +7,30 @@ import GainLossTable from '../components/GainLossTable';
 
 const WorkingPage = () => {
   return (
-    <div className="working-page min-h-screen bg-black text-white p-6">
+    <div className="min-h-screen bg-black text-white px-8 py-6">
       {/* Header */}
-      <Header />
+      <div className="mb-10">
+        <Header />
+      </div>
 
-      {/* Main content layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        {/* Left column (Balance + Buy/Sell stacked) */}
-        <div className="col-span-1 space-y-6">
-          <Balance />
-          <BuySell />
+      {/* Main content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Left column */}
+        <div className="space-y-8">
+          <div className="bg-gray-900 p-6 rounded-2xl">
+            <Balance />
+          </div>
+          <div className="bg-gray-900 p-6 rounded-2xl">
+            <BuySell />
+          </div>
         </div>
 
-        {/* Right column (Graph + GainLossTable) */}
-        <div className="col-span-2 space-y-6">
-          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+        {/* Right column */}
+        <div className="col-span-2 space-y-8">
+          <div className="bg-gray-900 p-6 rounded-2xl">
             <PriceGraph />
           </div>
-          <div className="bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+          <div className="bg-gray-900 p-6 rounded-2xl">
             <GainLossTable />
           </div>
         </div>

@@ -53,8 +53,7 @@ const PortfolioPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col space-y-6">
-      {/* Navbar */}
-      <Navbar theme="dark" leftLinks={["Home", "WorkPage", "Portfolio", "Contact"]} />
+     
 
       <div className="px-8 py-6">
         <h1 className="text-3xl font-bold text-purple-400 mb-4">My Portfolio</h1>

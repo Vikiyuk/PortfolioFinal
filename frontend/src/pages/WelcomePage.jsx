@@ -1,11 +1,10 @@
 // src/pages/WelcomePage.jsx
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
 import GainLossTable from '../components/GainLossTable';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement } from 'chart.js';
-import { motion } from 'framer-motion';
-import PrismAnimation from '../components/PrismAnimation';
 import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
@@ -36,47 +35,20 @@ const WelcomePage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Navbar */}
-      <Navbar theme="dark" leftLinks={["WelcomePage", "WorkPage", "Portfolio", "Contact"]} />
+      
 
       {/* Hero Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between px-8 py-12 border-b border-gray-700">
-        {/* Left side */}
-        <div className="md:w-1/2 space-y-6">
-          <motion.h1
-            className="text-5xl font-bold text-purple-400"
-            animate={{ textShadow: "0 0 30px #9d4edd" }}
-            transition={{ repeat: Infinity, repeatType: "mirror", duration: 1.5 }}
-          >
-            SARVAT
-          </motion.h1>
-          <p className="text-gray-300 text-lg">
-            Invest smartly, track trends, and maximize your gains with Sarvat.
-          </p>
-          <motion.button
-            className="bg-purple-600 hover:bg-purple-500 px-6 py-2 rounded font-semibold"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px #9d4edd" }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate("/working")}
-          >
-            Get Started
-          </motion.button>
-        </div>
-
-        {/* Right side: Realistic glass prism */}
-        <div className="md:w-1/2 flex justify-center items-center mt-12 md:mt-0">
-          <div className="w-full h-96">
-            <PrismAnimation />
-          </div>
-        </div>
-      </div>
+      <Hero navigate={navigate} />
 
       {/* Trends + GainLoss Section */}
-      <div className="md:flex md:space-x-6 px-8 py-8 border-b border-gray-700">
-        <div className="md:w-1/2 bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300 mb-6 md:mb-0">
+      <div className="md:flex md:space-x-6 px-8 py-8 border-b border-white-700">
+        {/* Trend Chart */}
+        <div className="md:w-1/2 p-4 rounded-xl bg-gradient-to-br from-black via-purple-900 to-black shadow-lg hover:shadow-[0_0_30px_rgba(157,78,221,0.7)] transition-shadow duration-500 mb-6 md:mb-0 border border-purple-700">
           <Line data={trendData} />
         </div>
-        <div className="md:w-1/2 bg-gray-900 p-4 rounded shadow hover:shadow-purple-500 transition-shadow duration-300">
+
+        {/* Gain/Loss Table */}
+        <div className="md:w-1/2 p-4 rounded-xl bg-gradient-to-br from-black via-purple-900 to-black shadow-lg hover:shadow-[0_0_30px_rgba(157,78,221,0.7)] transition-shadow duration-500 border border-purple-700">
           <GainLossTable />
         </div>
       </div>
@@ -92,13 +64,7 @@ const WelcomePage = () => {
                 onClick={() => toggleFAQ(idx)}
               >
                 <span className="text-purple-300 font-medium">{item.question}</span>
-                <motion.span
-                  className="text-purple-500"
-                  animate={{ rotate: openFAQ === idx ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  ▼
-                </motion.span>
+                <span className="text-purple-500">{openFAQ === idx ? "▲" : "▼"}</span>
               </div>
               {openFAQ === idx && (
                 <p className="text-gray-300 mt-2">{item.answer}</p>
