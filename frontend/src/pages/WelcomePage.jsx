@@ -36,8 +36,6 @@ const WelcomePage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Navbar */}
-      <Navbar theme="dark" leftLinks={["WelcomePage", "WorkPage", "Portfolio", "Contact"]} />
 
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row items-center justify-between px-8 py-12 border-b border-gray-700">
